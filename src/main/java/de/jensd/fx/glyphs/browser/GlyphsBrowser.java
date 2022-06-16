@@ -1,43 +1,42 @@
 /**
  * Copyright (c) 2016 Jens Deters http://www.jensd.de
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
  * License. You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS"
  * BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
- *
  */
 package de.jensd.fx.glyphs.browser;
 
 import de.jensd.fx.glyphs.GlyphIcon;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.Observable;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.util.Callback;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
  * @author Jens Deters
  */
 public class GlyphsBrowser extends VBox {
@@ -75,11 +74,17 @@ public class GlyphsBrowser extends VBox {
     @FXML
     private ListView<GlyphsPack> glyphsPackListView;
     @FXML
-    private ListView<GlyphIcon> glyphsGridView;
+    private TableView<List<GlyphIcon>> glyphsGridView;
     @FXML
     private Pane glyphPreviewPane;
 
     private final GlyphsBrowserAppModel model;
+
+    private int MAX_COLS = 4;
+
+    private final double PADDING = 12; // WORKAROUND
+
+    private double ICON_SIZE = 48;
 
     public GlyphsBrowser(GlyphsBrowserAppModel glyphPacksModel) {
         this.model = glyphPacksModel;
@@ -99,9 +104,28 @@ public class GlyphsBrowser extends VBox {
         }
     }
 
+    Callback<TableColumn.CellDataFeatures<List<GlyphIcon>, Button>, ObservableValue<Button>> cellValueFactory = param -> {
+        Button btn = new Button();
+        TableColumn<List<GlyphIcon>, Button> column = param.getTableColumn();
+        int cols = glyphsGridView.getColumns().indexOf(column);
+        if (cols >= param.getValue().size()) {
+            return null;
+        }
+        btn.setPrefWidth(ICON_SIZE);
+        btn.setPrefHeight(ICON_SIZE);
+        btn.setGraphic(param.getValue().get(cols));
+        return new SimpleObjectProperty<>(btn);
+    };
+
     @FXML
     void initialize() {
-        glyphsGridView.setCellFactory((ListView<GlyphIcon> gridView) -> new GlyphsGridCell());
+        glyphsGridView.getSelectionModel().setCellSelectionEnabled(false);
+        glyphsGridView.widthProperty().addListener((observable, oldValue, newValue) -> {
+            ICON_SIZE = glyphSizeSlider.getValue() + PADDING * 2;
+            MAX_COLS = (int) (newValue.doubleValue() / ICON_SIZE);
+            refreshGridView();
+        });
+
         //glyphsGridView.cellHeightProperty().bind(model.glyphSizeProperty());
         //glyphsGridView.cellWidthProperty().bind(model.glyphSizeProperty());
         glyphsGridView.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
@@ -121,7 +145,7 @@ public class GlyphsBrowser extends VBox {
             glyphsPackListView.getSelectionModel().selectFirst();
         });
         glyphsPackListView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends GlyphsPack> observable, GlyphsPack oldValue, GlyphsPack newValue) -> {
-            updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());
+            refreshGridView();
         });
         glyphsPackListView.getSelectionModel().selectFirst();
         model.selectedGlyphIconProperty().addListener((ObservableValue<? extends GlyphIcon> observable, GlyphIcon oldValue, GlyphIcon newValue) -> {
@@ -132,6 +156,22 @@ public class GlyphsBrowser extends VBox {
         });
         copyCodeButton.visibleProperty().bind(glyphCodeLabel.textProperty().isEmpty().not());
         copyFactoryCodeButton.visibleProperty().bind(glyphFactoryCodeLabel.textProperty().isEmpty().not());
+    }
+
+    private void refreshGridView(){
+        System.out.println("Load icons by columns: " + MAX_COLS);
+        glyphsGridView.getItems().clear();
+        glyphsGridView.getColumns().clear();
+        for (int i = 0; i < MAX_COLS; i++) {
+            TableColumn<List<GlyphIcon>, Button> col = new TableColumn<>(String.valueOf(i));
+            col.setSortable(false);
+            col.setEditable(false);
+            col.setPrefWidth(ICON_SIZE);
+            glyphsGridView.getColumns().add(col);
+            col.setCellValueFactory(cellValueFactory);
+        }
+        updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());
+        glyphsGridView.scrollTo(0);
     }
 
     private void showGlyphIconsDetails(GlyphIconInfo glyphIconInfo) {
@@ -154,7 +194,24 @@ public class GlyphsBrowser extends VBox {
 
     private void updateBrowser(GlyphsPack glyphPack) {
         clearGlyphIconsDetails();
-        glyphsGridView.setItems(glyphPack.getGlyphNodes());
+        List<List<GlyphIcon>> grid = new ArrayList<>();
+        int rowIdx = 0;
+        int colIdx = 0;
+        ObservableList<GlyphIcon> glyphNodes = glyphPack.getGlyphNodes();
+        for (int i = 0; i < glyphNodes.size(); i++) {
+            GlyphIcon glyphNode = glyphNodes.get(i);
+            colIdx = i % MAX_COLS;
+            if (colIdx == 0) {
+                rowIdx = i / MAX_COLS;
+                grid.add(rowIdx, new ArrayList<>());
+            }
+            List<GlyphIcon> row = grid.get(rowIdx);
+            row.add(glyphNode);
+        }
+        for (List<GlyphIcon> glyphIcons : grid) {
+            glyphsGridView.getItems().add(glyphIcons);
+        }
+
         numberOfIconsLabel.setText(glyphPack.getNumberOfIcons() + "");
         fontNameLabel.setText(glyphPack.getName());
         fontFamilyLabel.setText(glyphPack.getFamiliy());
@@ -170,7 +227,7 @@ public class GlyphsBrowser extends VBox {
             }
         }
         model.selectedGlyphIconProperty().set(glyphPack.getGlyphNodes().get(0));
-        
+
     }
 
     @FXML
@@ -179,7 +236,7 @@ public class GlyphsBrowser extends VBox {
         content.putString(model.selectedGlyphIconProperty().getValue().unicode());
         model.getClipboard().setContent(content);
     }
-    
+
     @FXML
     public void onCopyCode() {
         final ClipboardContent content = new ClipboardContent();
