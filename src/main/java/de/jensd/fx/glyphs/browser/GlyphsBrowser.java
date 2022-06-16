@@ -16,6 +16,7 @@ import de.jensd.fx.glyphs.GlyphIcon;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -77,6 +78,10 @@ public class GlyphsBrowser extends VBox {
     private TableView<List<GlyphIcon>> glyphsGridView;
     @FXML
     private Pane glyphPreviewPane;
+    @FXML
+    private TextField searchBar;
+    @FXML
+    private Label searchBarResultsLabel;
 
     private final GlyphsBrowserAppModel model;
 
@@ -145,6 +150,11 @@ public class GlyphsBrowser extends VBox {
             glyphsPackListView.getSelectionModel().selectFirst();
         });
         glyphsPackListView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends GlyphsPack> observable, GlyphsPack oldValue, GlyphsPack newValue) -> {
+
+            //Reset Search Bar
+            searchBar.setText("");
+
+            //
             refreshGridView();
         });
         glyphsPackListView.getSelectionModel().selectFirst();
@@ -156,9 +166,32 @@ public class GlyphsBrowser extends VBox {
         });
         copyCodeButton.visibleProperty().bind(glyphCodeLabel.textProperty().isEmpty().not());
         copyFactoryCodeButton.visibleProperty().bind(glyphFactoryCodeLabel.textProperty().isEmpty().not());
+        //== searchBar
+        searchBar.textProperty().addListener((observable, oldValue, newValue) -> {
+            //In case search bar has no text inside
+            if (searchBar.getText().isEmpty()) {
+                //Reset Search Bar Found Label
+                searchBarResultsLabel.setText("Found : [ All ]");
+
+                //Show all the items on the GridView
+                updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());
+            }
+            else { //Let's do some search magic
+                ObservableList<GlyphIcon> glyphNodes = glyphsPackListView.getSelectionModel().getSelectedItem().getGlyphNodes();
+                List<GlyphIcon> filtered = glyphNodes.filtered(glyphIcon -> {
+                    //Glyph name contains search bar text ? [ No case sensitive ]
+                    String searchValue = newValue.toLowerCase(); //Speed improvements
+                    return glyphIcon.getGlyphName().toLowerCase().contains(searchValue); //visible only if name matches searchValue
+                }).stream().toList();
+                //Add the new items
+                glyphsGridView.getItems().clear();
+                updateIcons(FXCollections.observableList(filtered));
+                searchBarResultsLabel.setText("Found : [ " + filtered.size() + " ]");
+            }
+        });
     }
 
-    private void refreshGridView(){
+    private void refreshGridView() {
         System.out.println("Load icons by columns: " + MAX_COLS);
         glyphsGridView.getItems().clear();
         glyphsGridView.getColumns().clear();
@@ -192,12 +225,10 @@ public class GlyphsBrowser extends VBox {
         glyphFactoryCodeLabel.setText("");
     }
 
-    private void updateBrowser(GlyphsPack glyphPack) {
-        clearGlyphIconsDetails();
+    private void updateIcons(ObservableList<GlyphIcon> glyphNodes) {
         List<List<GlyphIcon>> grid = new ArrayList<>();
         int rowIdx = 0;
         int colIdx = 0;
-        ObservableList<GlyphIcon> glyphNodes = glyphPack.getGlyphNodes();
         for (int i = 0; i < glyphNodes.size(); i++) {
             GlyphIcon glyphNode = glyphNodes.get(i);
             colIdx = i % MAX_COLS;
@@ -211,6 +242,12 @@ public class GlyphsBrowser extends VBox {
         for (List<GlyphIcon> glyphIcons : grid) {
             glyphsGridView.getItems().add(glyphIcons);
         }
+    }
+
+    private void updateBrowser(GlyphsPack glyphPack) {
+        clearGlyphIconsDetails();
+        ObservableList<GlyphIcon> glyphNodes = glyphPack.getGlyphNodes();
+        this.updateIcons(glyphNodes);
 
         numberOfIconsLabel.setText(glyphPack.getNumberOfIcons() + "");
         fontNameLabel.setText(glyphPack.getName());
