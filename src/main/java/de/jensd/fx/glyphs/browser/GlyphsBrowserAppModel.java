@@ -71,7 +71,7 @@ public class GlyphsBrowserAppModel {
     public final static String RESOURCE_BUNDLE = "i18n/messages";
     public final static String GLYPH_BROWSER_FXML = "/fxml/glyphs_browser.fxml";
     public final static int DEFAULT_WITH = 1024;
-    public final static int DEFAULT_HEIGHT = 600;
+    public final static int DEFAULT_HEIGHT = 840;
     public final static int DEFAULT_GLYPH_SIZE = 48;
     public final static String[] GLYPH_PREVIEW_SIZES = {"8px", "10px", "12px", "16px", "26px", "36px", "46px", "56px", "66px", "86px"};
 
