@@ -16,7 +16,6 @@ import de.jensd.fx.glyphs.GlyphIcon;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -152,7 +151,7 @@ public class GlyphsBrowser extends VBox {
         glyphsPackListView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends GlyphsPack> observable, GlyphsPack oldValue, GlyphsPack newValue) -> {
 
             //Reset Search Bar
-            searchBar.setText("");
+//            searchBar.setText("");
 
             //
             refreshGridView();
@@ -178,15 +177,7 @@ public class GlyphsBrowser extends VBox {
             }
             else { //Let's do some search magic
                 ObservableList<GlyphIcon> glyphNodes = glyphsPackListView.getSelectionModel().getSelectedItem().getGlyphNodes();
-                List<GlyphIcon> filtered = glyphNodes.filtered(glyphIcon -> {
-                    //Glyph name contains search bar text ? [ No case sensitive ]
-                    String searchValue = newValue.toLowerCase(); //Speed improvements
-                    return glyphIcon.getGlyphName().toLowerCase().contains(searchValue); //visible only if name matches searchValue
-                }).stream().toList();
-                //Add the new items
-                glyphsGridView.getItems().clear();
-                updateIcons(FXCollections.observableList(filtered));
-                searchBarResultsLabel.setText("Found : [ " + filtered.size() + " ]");
+                updateIcons(glyphNodes, newValue);
             }
         });
     }
@@ -225,29 +216,10 @@ public class GlyphsBrowser extends VBox {
         glyphFactoryCodeLabel.setText("");
     }
 
-    private void updateIcons(ObservableList<GlyphIcon> glyphNodes) {
-        List<List<GlyphIcon>> grid = new ArrayList<>();
-        int rowIdx = 0;
-        int colIdx = 0;
-        for (int i = 0; i < glyphNodes.size(); i++) {
-            GlyphIcon glyphNode = glyphNodes.get(i);
-            colIdx = i % MAX_COLS;
-            if (colIdx == 0) {
-                rowIdx = i / MAX_COLS;
-                grid.add(rowIdx, new ArrayList<>());
-            }
-            List<GlyphIcon> row = grid.get(rowIdx);
-            row.add(glyphNode);
-        }
-        for (List<GlyphIcon> glyphIcons : grid) {
-            glyphsGridView.getItems().add(glyphIcons);
-        }
-    }
-
     private void updateBrowser(GlyphsPack glyphPack) {
         clearGlyphIconsDetails();
         ObservableList<GlyphIcon> glyphNodes = glyphPack.getGlyphNodes();
-        this.updateIcons(glyphNodes);
+        this.updateIcons(glyphNodes, searchBar.getText());
 
         numberOfIconsLabel.setText(glyphPack.getNumberOfIcons() + "");
         fontNameLabel.setText(glyphPack.getName());
@@ -264,7 +236,40 @@ public class GlyphsBrowser extends VBox {
             }
         }
         model.selectedGlyphIconProperty().set(glyphPack.getGlyphNodes().get(0));
+    }
 
+    private void updateIcons(ObservableList<GlyphIcon> glyphNodes, String filter) {
+        glyphsGridView.getItems().clear();
+        List<GlyphIcon> filtered = null;
+        if (filter != null && !"".equals(filter.trim())) {
+            filtered = glyphNodes.filtered(glyphIcon -> {
+                //Glyph name contains search bar text ? [ No case sensitive ]
+                String searchValue = filter.toLowerCase(); //Speed improvements
+                return glyphIcon.getGlyphName().toLowerCase().contains(searchValue); //visible only if name matches searchValue
+            }).stream().toList();
+            // Add the new items
+            glyphsGridView.getItems().clear();
+        }
+        else {
+            filtered = glyphNodes.stream().toList();
+        }
+        searchBarResultsLabel.setText("Found : [ " + filtered.size() + " ]");
+        List<List<GlyphIcon>> grid = new ArrayList<>();
+        int rowIdx = 0;
+        int colIdx = 0;
+        for (int i = 0; i < filtered.size(); i++) {
+            GlyphIcon glyphNode = filtered.get(i);
+            colIdx = i % MAX_COLS;
+            if (colIdx == 0) {
+                rowIdx = i / MAX_COLS;
+                grid.add(rowIdx, new ArrayList<>());
+            }
+            List<GlyphIcon> row = grid.get(rowIdx);
+            row.add(glyphNode);
+        }
+        for (List<GlyphIcon> glyphIcons : grid) {
+            glyphsGridView.getItems().add(glyphIcons);
+        }
     }
 
     @FXML
