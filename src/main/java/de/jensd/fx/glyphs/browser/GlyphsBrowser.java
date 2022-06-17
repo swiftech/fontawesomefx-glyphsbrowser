@@ -21,8 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
@@ -180,6 +179,13 @@ public class GlyphsBrowser extends VBox {
                 updateIcons(glyphNodes, newValue);
             }
         });
+        this.setOnKeyPressed(event -> {
+            KeyCodeCombination kc = new KeyCodeCombination(KeyCode.F, KeyCombination.META_DOWN);
+            if (kc.match(event)){
+                event.consume();
+                searchBar.requestFocus();
+            }
+        });
     }
 
     private void refreshGridView() {
@@ -270,6 +276,11 @@ public class GlyphsBrowser extends VBox {
         for (List<GlyphIcon> glyphIcons : grid) {
             glyphsGridView.getItems().add(glyphIcons);
         }
+    }
+
+    @FXML
+    public void onClearSearch() {
+        searchBar.clear();
     }
 
     @FXML

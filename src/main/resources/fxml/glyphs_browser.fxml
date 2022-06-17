@@ -64,6 +64,7 @@
                <children>
                    <HBox spacing="5.0">
                        <children>
+                           <Button fx:id="btnClear" text="clear" onAction="#onClearSearch"/>
                            <TextField fx:id="searchBar" promptText="search..." HBox.hgrow="ALWAYS" />
                            <Label fx:id="searchBarResultsLabel" maxHeight="1.7976931348623157E308" minWidth="-Infinity" prefHeight="25.0" prefWidth="131.0" style="-fx-font-weight: bold;" text="Found: [ All ]" />
                        </children>
