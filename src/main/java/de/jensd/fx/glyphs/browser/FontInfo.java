@@ -33,10 +33,10 @@ public class FontInfo {
             if (url.isPresent()) {
                 this.fontInfoProperties.load(url.get().openStream());
             } else {
-                System.out.printf("An error accurred while loading '%s'", pathToFontInfoProperties);
+                System.out.printf("An error occurred while loading '%s'", pathToFontInfoProperties);
             }
         } catch (IOException ex) {
-            System.out.printf("An error accurred while loading '%s': %s", pathToFontInfoProperties, ex.getMessage());
+            System.out.printf("An error occurred while loading '%s': %s", pathToFontInfoProperties, ex.getMessage());
         }
     }
 
