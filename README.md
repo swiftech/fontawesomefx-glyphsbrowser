@@ -1,5 +1,7 @@
 # FontAwesomeFX Glyphsbrowser
 
+This fork fixed some bugs and added search functionality, clone this repo and build
+
 ![](images/fontawesomefx-glyphsbrowser-1.3.0.png)
 
 
