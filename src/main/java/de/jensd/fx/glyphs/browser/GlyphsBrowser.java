@@ -133,10 +133,13 @@ public class GlyphsBrowser extends VBox {
         glyphsPackListView.getSelectionModel().selectedItemProperty().addListener((ObservableValue<? extends GlyphsPack> observable, GlyphsPack oldValue, GlyphsPack newValue) -> {
            
         	//Reset Search Bar
-        	searchBar.setText("");
+//        	searchBar.setText("");
         	
         	//Update the Browser
-        	updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());
+//        	updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());
+
+            // do searching directly if already has keyword
+            this.search(searchBar.getText());
         });
         glyphsPackListView.getSelectionModel().selectFirst();
         model.selectedGlyphIconProperty().addListener((ObservableValue<? extends GlyphIcon> observable, GlyphIcon oldValue, GlyphIcon newValue) -> {
@@ -152,35 +155,38 @@ public class GlyphsBrowser extends VBox {
         
 		//== searchBar
 		searchBar.textProperty().addListener((observable , oldValue , newValue) -> {
-			//In case search bar has no text inside
-			if (searchBar.getText().isEmpty()) {
-				
-				//Reset all to visible
-				glyphsPackListView.getSelectionModel().getSelectedItem().getGlyphNodes().forEach(glyph -> glyph.setVisible(true));
-				
-				//Reset Search Bar Found Label
-				searchBarResultsLabel.setText("Found : [ All ]");
-				
-				//Show all the items on the GridView
-				updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());							
-				
-			} else { //Let's do some search magic
-				glyphsPackListView.getSelectionModel().getSelectedItem().getGlyphNodes().forEach(glyph -> {
-					
-					//Glyph name contains search bar text ? [ No case sensitive ]
-					String searchValue = newValue.toLowerCase(); //Speed improvements
-					glyph.setVisible(glyph.getGlyphName().toLowerCase().contains(searchValue)); //visible only if name matches searchValue
-				});
-				
-				
-				//Add the new items
-				glyphsGridView.setItems(glyphsPackListView.getSelectionModel().getSelectedItem().getGlyphNodes().stream().filter(Node::isVisible)
-						.collect(Collectors.toCollection(FXCollections::observableArrayList)));
-				searchBarResultsLabel.setText("Found : [ " + glyphsGridView.getItems().size()+" ]");
-			}
+            this.search(newValue);
 		});
-        
-        
+    }
+
+
+    private void search(String keyword) {
+        //In case search bar has no text inside
+        if (searchBar.getText().isEmpty()) {
+
+            //Reset all to visible
+            glyphsPackListView.getSelectionModel().getSelectedItem().getGlyphNodes().forEach(glyph -> glyph.setVisible(true));
+
+            //Reset Search Bar Found Label
+            searchBarResultsLabel.setText("Found : [ All ]");
+
+            //Show all the items on the GridView
+            updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());
+
+        } else { //Let's do some search magic
+            glyphsPackListView.getSelectionModel().getSelectedItem().getGlyphNodes().forEach(glyph -> {
+
+                //Glyph name contains search bar text ? [ No case sensitive ]
+                String searchValue = keyword.toLowerCase(); //Speed improvements
+                glyph.setVisible(glyph.getGlyphName().toLowerCase().contains(searchValue)); //visible only if name matches searchValue
+            });
+
+
+            //Add the new items
+            glyphsGridView.setItems(glyphsPackListView.getSelectionModel().getSelectedItem().getGlyphNodes().stream().filter(Node::isVisible)
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList)));
+            searchBarResultsLabel.setText("Found : [ " + glyphsGridView.getItems().size()+" ]");
+        }
     }
 
     private void showGlyphIconsDetails(GlyphIconInfo glyphIconInfo) {

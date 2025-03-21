@@ -19,7 +19,7 @@ package de.jensd.fx.glyphs.browser;
  */
 public interface SelectableNode {
 
-    public void setSelected(boolean selected);
+    void setSelected(boolean selected);
 
-    public boolean isSelected();
+    boolean isSelected();
 }

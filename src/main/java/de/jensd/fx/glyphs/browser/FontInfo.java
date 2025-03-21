@@ -24,7 +24,7 @@ import java.util.Properties;
  */
 public class FontInfo {
 
-    private Properties fontInfoProperties;
+    private final Properties fontInfoProperties;
 
     public FontInfo(String pathToFontInfoProperties) {
         fontInfoProperties = new Properties();
@@ -33,10 +33,10 @@ public class FontInfo {
             if (url.isPresent()) {
                 this.fontInfoProperties.load(url.get().openStream());
             } else {
-                System.out.printf("An error accurred while loading '%s'", pathToFontInfoProperties);
+                System.out.printf("An error occurred while loading '%s'", pathToFontInfoProperties);
             }
         } catch (IOException ex) {
-            System.out.printf("An error accurred while loading '%s': %s", pathToFontInfoProperties, ex.getMessage());
+            System.out.printf("An error occurred while loading '%s': %s", pathToFontInfoProperties, ex.getMessage());
         }
     }
 
@@ -75,8 +75,8 @@ public class FontInfo {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Fontname     : ").append(getName()).append('\n');
-        builder.append("Fontfamily   : ").append(getFamiliy()).append('\n');
+        builder.append("Font name    : ").append(getName()).append('\n');
+        builder.append("Font family  : ").append(getFamiliy()).append('\n');
         builder.append("Version      : ").append(getVersion()).append('\n');
         builder.append("License      : ").append(getLicense()).append('\n');
         builder.append("Release Date : ").append(getReleaseDate()).append('\n');

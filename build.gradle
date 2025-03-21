@@ -1,14 +1,23 @@
+plugins {
+    id 'org.openjfx.javafxplugin' version "0.0.11"
+}
+
+
 apply plugin: 'java'
+//apply plugin: 'org.openjfx.javafxplugin'
 apply plugin: 'application'
 
 repositories {
-    jcenter()
-    mavenCentral()
     mavenLocal()
+    mavenCentral()
 }
 
+//plugins {
+//    id 'org.openjfx.javafxplugin' version "0.0.11"
+//}
+
 task fatJar(type: Jar) {
-    baseName = project.name + '-all'
+    archiveBaseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
     manifest {
@@ -32,14 +41,22 @@ task execute(type:JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 }
 
+
+
+javafx {
+    version = "23.0.2"
+    modules = [ 'javafx.graphics', 'javafx.controls', 'javafx.fxml' ]
+}
+
 dependencies {
-    compile 'de.jensd:fontawesomefx-emojione:2.2.7-2'
-    compile 'de.jensd:fontawesomefx-fontawesome:4.7.0-5'
-    compile 'de.jensd:fontawesomefx-icons525:3.0.0-4'
-    compile 'de.jensd:fontawesomefx-materialdesignfont:1.7.22-4'
-    compile 'de.jensd:fontawesomefx-materialicons:2.2.0-5'
-    compile 'de.jensd:fontawesomefx-octicons:4.3.0-5'
-    compile 'de.jensd:fontawesomefx-weathericons:2.0.10-5'
-    compile 'de.jensd:fontawesomefx-controls:8.15'
-    compile 'org.controlsfx:controlsfx:8.40.11'
+    implementation 'de.jensd:fontawesomefx-commons:17.0'
+    implementation 'de.jensd:fontawesomefx-emojione:2.2.7-17'
+    implementation 'de.jensd:fontawesomefx-fontawesome:4.7.0-17'
+    implementation 'de.jensd:fontawesomefx-icons525:3.0.0-17'
+    implementation 'de.jensd:fontawesomefx-materialdesignfont:1.7.22-17'
+    implementation 'de.jensd:fontawesomefx-materialicons:2.2.0-17'
+    implementation 'de.jensd:fontawesomefx-octicons:4.3.0-17'
+    implementation 'de.jensd:fontawesomefx-weathericons:2.0.10-17'
+    implementation 'de.jensd:fontawesomefx-controls:17.0'
+    implementation 'org.controlsfx:controlsfx:11.2.1'
 }
