@@ -24,7 +24,7 @@ import java.util.Properties;
  */
 public class FontInfo {
 
-    private Properties fontInfoProperties;
+    private final Properties fontInfoProperties;
 
     public FontInfo(String pathToFontInfoProperties) {
         fontInfoProperties = new Properties();
@@ -75,8 +75,8 @@ public class FontInfo {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Fontname     : ").append(getName()).append('\n');
-        builder.append("Fontfamily   : ").append(getFamiliy()).append('\n');
+        builder.append("Font name    : ").append(getName()).append('\n');
+        builder.append("Font family  : ").append(getFamiliy()).append('\n');
         builder.append("Version      : ").append(getVersion()).append('\n');
         builder.append("License      : ").append(getLicense()).append('\n');
         builder.append("Release Date : ").append(getReleaseDate()).append('\n');

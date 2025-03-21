@@ -15,7 +15,6 @@ package de.jensd.fx.glyphs.browser;
 
 import de.jensd.fx.glyphs.GlyphIcon;
 import javafx.geometry.Pos;
-import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ListCell;
 
 /**

@@ -73,7 +73,7 @@ public class GlyphsBrowser extends VBox {
     @FXML
     private ListView<GlyphsPack> glyphsPackListView;
     @FXML
-    private TableView<List<GlyphIcon>> glyphsGridView;
+    private TableView<List<GlyphIcon>> glyphsTableView;
     @FXML
     private Pane glyphPreviewPane;
     @FXML
@@ -110,7 +110,7 @@ public class GlyphsBrowser extends VBox {
     Callback<TableColumn.CellDataFeatures<List<GlyphIcon>, Button>, ObservableValue<Button>> cellValueFactory = param -> {
         Button btn = new Button();
         TableColumn<List<GlyphIcon>, Button> column = param.getTableColumn();
-        int cols = glyphsGridView.getColumns().indexOf(column);
+        int cols = glyphsTableView.getColumns().indexOf(column);
         if (cols >= param.getValue().size()) {
             return null;
         }
@@ -122,16 +122,16 @@ public class GlyphsBrowser extends VBox {
 
     @FXML
     void initialize() {
-        glyphsGridView.getSelectionModel().setCellSelectionEnabled(false);
-        glyphsGridView.widthProperty().addListener((observable, oldValue, newValue) -> {
+        glyphsTableView.getSelectionModel().setCellSelectionEnabled(false);
+        glyphsTableView.widthProperty().addListener((observable, oldValue, newValue) -> {
             ICON_SIZE = glyphSizeSlider.getValue() + PADDING * 2;
             MAX_COLS = (int) (newValue.doubleValue() / ICON_SIZE);
-            refreshGridView();
+            refreshTableView();
         });
 
         //glyphsGridView.cellHeightProperty().bind(model.glyphSizeProperty());
         //glyphsGridView.cellWidthProperty().bind(model.glyphSizeProperty());
-        glyphsGridView.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+        glyphsTableView.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
             if (event.getTarget() instanceof GlyphIcon) {
                 model.selectedGlyphIconProperty().set((GlyphIcon) event.getTarget());
             }
@@ -153,7 +153,7 @@ public class GlyphsBrowser extends VBox {
 //            searchBar.setText("");
 
             //
-            refreshGridView();
+            refreshTableView();
         });
         glyphsPackListView.getSelectionModel().selectFirst();
         model.selectedGlyphIconProperty().addListener((ObservableValue<? extends GlyphIcon> observable, GlyphIcon oldValue, GlyphIcon newValue) -> {
@@ -171,7 +171,7 @@ public class GlyphsBrowser extends VBox {
                 //Reset Search Bar Found Label
                 searchBarResultsLabel.setText("Found : [ All ]");
 
-                //Show all the items on the GridView
+                //Show all the items on the TableView
                 updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());
             }
             else { //Let's do some search magic
@@ -188,20 +188,20 @@ public class GlyphsBrowser extends VBox {
         });
     }
 
-    private void refreshGridView() {
+    private void refreshTableView() {
         System.out.println("Load icons by columns: " + MAX_COLS);
-        glyphsGridView.getItems().clear();
-        glyphsGridView.getColumns().clear();
+        glyphsTableView.getItems().clear();
+        glyphsTableView.getColumns().clear();
         for (int i = 0; i < MAX_COLS; i++) {
             TableColumn<List<GlyphIcon>, Button> col = new TableColumn<>(String.valueOf(i));
             col.setSortable(false);
             col.setEditable(false);
             col.setPrefWidth(ICON_SIZE);
-            glyphsGridView.getColumns().add(col);
+            glyphsTableView.getColumns().add(col);
             col.setCellValueFactory(cellValueFactory);
         }
         updateBrowser(glyphsPackListView.getSelectionModel().getSelectedItem());
-        glyphsGridView.scrollTo(0);
+        glyphsTableView.scrollTo(0);
     }
 
     private void showGlyphIconsDetails(GlyphIconInfo glyphIconInfo) {
@@ -245,7 +245,7 @@ public class GlyphsBrowser extends VBox {
     }
 
     private void updateIcons(ObservableList<GlyphIcon> glyphNodes, String filter) {
-        glyphsGridView.getItems().clear();
+        glyphsTableView.getItems().clear();
         List<GlyphIcon> filtered = null;
         if (filter != null && !"".equals(filter.trim())) {
             filtered = glyphNodes.filtered(glyphIcon -> {
@@ -254,7 +254,7 @@ public class GlyphsBrowser extends VBox {
                 return glyphIcon.getGlyphName().toLowerCase().contains(searchValue); //visible only if name matches searchValue
             }).stream().toList();
             // Add the new items
-            glyphsGridView.getItems().clear();
+            glyphsTableView.getItems().clear();
         }
         else {
             filtered = glyphNodes.stream().toList();
@@ -274,7 +274,7 @@ public class GlyphsBrowser extends VBox {
             row.add(glyphNode);
         }
         for (List<GlyphIcon> glyphIcons : grid) {
-            glyphsGridView.getItems().add(glyphIcons);
+            glyphsTableView.getItems().add(glyphIcons);
         }
     }
 
