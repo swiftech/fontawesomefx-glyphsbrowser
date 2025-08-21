@@ -12,7 +12,7 @@ buildscript {
 
 plugins {
     id "java"
-    id 'org.openjfx.javafxplugin' version "0.0.13"
+    id 'org.openjfx.javafxplugin' version "0.0.14"
 }
 
 apply plugin: 'java'
@@ -63,5 +63,5 @@ dependencies {
     implementation 'de.jensd:fontawesomefx-octicons:4.3.0-17'
     implementation 'de.jensd:fontawesomefx-weathericons:2.0.10-17'
     implementation 'de.jensd:fontawesomefx-controls:17.0'
-    implementation 'org.controlsfx:controlsfx:11.2.1'
+    implementation 'org.controlsfx:controlsfx:11.2.2'
 }
